@@ -14,6 +14,7 @@ COMMENT_TEXT: str = 'Новый текст комментария'
 
 User = get_user_model()
 
+
 @pytest.fixture
 def author(django_user_model: type[get_user_model()]) -> get_user_model():
     return django_user_model.objects.create(username='Автор')
