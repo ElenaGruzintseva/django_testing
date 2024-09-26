@@ -5,7 +5,7 @@ from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
-from ya_news.news.models import Comment, News
+from news.models import Comment, News
 
 NEWS_COUNT_ON_HOME_PAGE = 10
 COMMENTS_COUNT = 10
