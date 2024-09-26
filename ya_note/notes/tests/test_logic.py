@@ -1,6 +1,6 @@
 from http import HTTPStatus
 
-from django.utils.text import slugify
+from pytils.translit import slugify
 
 from notes.models import Note
 from .conftest import TestBase
