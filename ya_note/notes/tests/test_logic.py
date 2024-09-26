@@ -17,7 +17,7 @@ FORM_DATA_NOTE = {
 }
 
 FORM_DATA_NO_SLUG = {
-    'title': 'Заметка 3',
+    'title': 'Название',
     'text': 'Просто текст',
     'slug': ''
 }
