@@ -5,7 +5,7 @@ from django.utils.text import slugify
 from notes.models import Note
 from .conftest import TestBase
 from .constants_urls import (
-    URL_NOTES_ADD, URL_NOTE_CREATE_SUCCESS,
+    URL_NOTES_ADD, URL_NOTES_SUCCESS,
     URL_NOTES_EDIT, URL_NOTES_DELETE
 )
 
@@ -17,9 +17,9 @@ FORM_DATA_NOTE = {
 }
 
 FORM_DATA_NO_SLUG = {
-    'title': 'Название',
+    'title': 'Интересность',
     'text': 'Просто текст',
-    'slug': ''
+    'slug': '',
 }
 
 FORM_DATA_DUPLICATE_SLUG = {
@@ -37,7 +37,7 @@ class TestLogic(TestBase):
     def test_user_can_create_note(self):
         notes = set(Note.objects.all())
         self.assertRedirects(self.author_client.post(
-            URL_NOTES_ADD, data=FORM_DATA_NOTE), URL_NOTE_CREATE_SUCCESS
+            URL_NOTES_ADD, data=FORM_DATA_NOTE), URL_NOTES_SUCCESS
         )
         difference = set(Note.objects.all()) - notes
         self.assertEqual(len(difference), 1)
@@ -61,20 +61,18 @@ class TestLogic(TestBase):
         self.assertEqual(set(Note.objects.all()), notes)
 
     def test_user_can_create_note_without_slug(self):
-        notes = set(Note.objects.all())
-        self.assertRedirects(self.author_client.post(
-            URL_NOTES_ADD,
-            data=FORM_DATA_NO_SLUG
-        ), URL_NOTE_CREATE_SUCCESS)
-        final_notes = set(Note.objects.all())
-        difference = final_notes.difference(notes)
-        self.assertEqual(len(difference), 1)
-        created_note = difference.pop()
+        Note.objects.all().delete()
+        FORM_DATA_NO_SLUG.pop('slug')
+        response = self.author_client.post(
+            URL_NOTES_ADD, data=FORM_DATA_NO_SLUG
+        )
+        self.assertRedirects(response, URL_NOTES_SUCCESS)
+        created_note = Note.objects.get(title=FORM_DATA_NO_SLUG['title'])
+        self.assertEqual(
+            created_note.slug, slugify(FORM_DATA_NO_SLUG['title'])
+        )
         self.assertEqual(created_note.title, FORM_DATA_NO_SLUG['title'])
         self.assertEqual(created_note.text, FORM_DATA_NO_SLUG['text'])
-        self.assertEqual(created_note.slug, slugify(
-            FORM_DATA_NO_SLUG['title']
-        ))
         self.assertEqual(created_note.author, self.author)
 
     def test_author_can_edit_note(self):
