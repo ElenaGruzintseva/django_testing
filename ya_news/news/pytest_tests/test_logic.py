@@ -1,100 +1,92 @@
 from http import HTTPStatus
-from random import choice
-
-from django.urls import reverse
 
 import pytest
-from conftest import COMMENT_TEXT
-from pytest_django.asserts import assertRedirects
+from pytest_django.asserts import assertRedirects, assertFormError
 
 from news.forms import BAD_WORDS, WARNING
 from news.models import Comment
 
-NEWS_DELETE_URL = 'news:delete'
-NEWS_DETAIL_URL = 'news:detail'
-NEWS_EDIT_URL = 'news:edit'
-NEWS_HOME_URL = 'news:home'
+pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.django_db
-def test_anonymous_user_cant_create_comment(client, news, form_data):
-    comments_count_before = Comment.objects.count()
-    assert comments_count_before == 0
-    url = reverse(NEWS_DETAIL_URL, args=(news.id,))
-    client.post(url, data=form_data)
-    comments_count_after = Comment.objects.count()
-    assert comments_count_after == 0
+FORM_DATA = {
+    'text': 'Текст комментария.'
+}
 
 
-def test_user_can_create_comment(author_client, author, news, form_data):
-    comments_count_before = Comment.objects.count()
-    assert comments_count_before == 0
-    url = reverse(NEWS_DETAIL_URL, args=(news.id,))
-    response = author_client.post(url, data=form_data)
-    assertRedirects(response, f'{url}#comments')
-    comments_count_after = Comment.objects.count()
-    assert comments_count_after == 1
-    comment = Comment.objects.get()
-    assert comment.text == COMMENT_TEXT
+def test_anonymous_user_cant_create_comment(
+    client, news_detail_url
+):
+    comments_count = Comment.objects.count()
+    client.post(news_detail_url, data=FORM_DATA)
+    assert Comment.objects.count() == comments_count
+
+
+def test_user_can_create_comment(
+        author_client, author, news_detail_url, news
+):
+    comments_count = Comment.objects.count()
+    comments_all = set(Comment.objects.all())
+    response = author_client.post(news_detail_url, data=FORM_DATA)
+    assertRedirects(response, f'{news_detail_url}#comments')
+    assert Comment.objects.count() == comments_count + 1
+    comments_upd_all = set(Comment.objects.all())
+    comments_difference = comments_upd_all.difference(comments_all)
+    assert len(comments_difference) == 1
+    comment = comments_difference.pop()
+    assert comment.text == FORM_DATA['text']
     assert comment.news == news
     assert comment.author == author
 
 
-def test_user_cant_use_bad_words(author_client, news):
-    comments_count_before = Comment.objects.count()
-    assert comments_count_before == 0
-    bad_words_data = {
-        'text': f'Какой-то текст, {choice(BAD_WORDS)}, еще текст'
-    }
-    url = reverse(NEWS_DETAIL_URL, args=(news.id,))
-    response = author_client.post(url, data=bad_words_data)
-    assert response.status_code == HTTPStatus.OK
-    form = response.context['form']
-    assert 'text' in form.errors
-    assert WARNING in form.errors['text']
-    comments_count_after = Comment.objects.count()
-    assert comments_count_after == 0
+def test_user_cant_use_bad_words(
+        author_client, news_detail_url
+):
+    comments_count = Comment.objects.count()
+    bad_words_data = {'text': f'Text, {BAD_WORDS[0]}, text'}
+    response = author_client.post(news_detail_url, data=bad_words_data)
+    assertFormError(response, form='form', field='text', errors=WARNING)
+    assert Comment.objects.count() == comments_count
 
 
 def test_author_can_edit_comment(
-    author_client, form_data, comment, url_to_comments, news, author
+    author_client, comment, news_edit_url, news_detail_url
 ):
-    url = reverse(NEWS_EDIT_URL, args=(comment.id,))
-    response = author_client.post(url, data=form_data)
-    assertRedirects(response, url_to_comments)
-    comment.refresh_from_db()
-    assert comment.text == COMMENT_TEXT
-    assert comment.news == news
-    assert comment.author == author
+    assertRedirects(
+        author_client.post(news_edit_url, FORM_DATA),
+        f'{news_detail_url}#comments'
+    )
+    comment_from_db = Comment.objects.get(id=comment.id)
+    assert comment_from_db.text == FORM_DATA['text']
+    assert comment_from_db.author == comment.author
+    assert comment_from_db.news == comment.news
 
 
-def test_author_can_delete_comment(author_client, comment, url_to_comments):
-    comments_count_before = Comment.objects.count()
-    assert comments_count_before == 1
-    url = reverse(NEWS_DELETE_URL, args=(comment.id,))
-    response = author_client.delete(url)
-    assertRedirects(response, url_to_comments)
-    comments_count_after = Comment.objects.count()
-    assert comments_count_after == 0
+def test_author_can_delete_comment(
+    author_client, news_delete_url, news_detail_url
+):
+    comments_count = Comment.objects.count()
+    response = author_client.delete(news_delete_url)
+    assertRedirects(response, f'{news_detail_url}#comments')
+    assert Comment.objects.count() == comments_count - 1
 
 
-def test_user_cant_delete_comment_of_another_user(admin_client, comment):
-    comments_count_before = Comment.objects.count()
-    assert comments_count_before == 1
-    url = reverse(NEWS_DELETE_URL, args=(comment.id,))
-    response = admin_client.delete(url)
+def test_user_cant_delete_comment_of_another_user(
+    reader_client, news_delete_url
+):
+    comments_count = Comment.objects.count()
+    response = reader_client.delete(news_delete_url)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    comments_count_after = Comment.objects.count()
-    assert comments_count_after == 1
+    assert Comment.objects.count() == comments_count
 
 
 def test_user_cant_edit_comment_of_another_user(
-    admin_client, comment, form_data, news, author
+    reader_client, comment, news_edit_url
 ):
-    url = reverse(NEWS_EDIT_URL, args=(comment.id,))
-    response = admin_client.post(url, data=form_data)
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    comment.refresh_from_db()
-    assert comment.text != COMMENT_TEXT
-    assert comment.news == news
-    assert comment.author == author
+    assert reader_client.post(
+        news_edit_url, FORM_DATA
+    ).status_code == HTTPStatus.NOT_FOUND
+    comment_from_db = Comment.objects.get(id=comment.id)
+    assert comment_from_db.text == comment.text
+    assert comment_from_db.author == comment.author
+    assert comment_from_db.news == comment.news

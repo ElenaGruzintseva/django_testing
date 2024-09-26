@@ -1,59 +1,36 @@
 import pytest
 
-from django.conf import settings
-from django.urls import reverse
+from news.forms import CommentForm
+from news.pytest_tests.conftest import NEWS_COUNT_ON_HOME_PAGE
+
+pytestmark = pytest.mark.django_db
 
 
-AUTHOR_CLIENT = pytest.lazy_fixture('author_client')
-CLIENT = pytest.lazy_fixture('client')
-NEWS_DETAIL_URL = 'news:detail'
-NEWS_HOME_URL = 'news:home'
+def test_news_count(client, news_home_url, all_news):
+    assert client.get(news_home_url).context[
+        'object_list'].count() == NEWS_COUNT_ON_HOME_PAGE
 
 
-@pytest.mark.django_db
-@pytest.mark.usefixtures('all_news')
-def test_news_count(client):
-    url = reverse(NEWS_HOME_URL)
-    response = client.get(url)
-    object_list = response.context['object_list']
-    news_count = len(object_list)
-    assert news_count == settings.NEWS_COUNT_ON_HOME_PAGE
+def test_news_order(client, news_home_url, all_news):
+    all_dates = [news.date for news in client.get(news_home_url)
+                 .context['object_list']]
+    assert sorted(all_dates, reverse=True) == all_dates
 
 
-@pytest.mark.django_db
-@pytest.mark.usefixtures('all_news')
-def test_news_order(client):
-    url = reverse(NEWS_HOME_URL)
-    response = client.get(url)
-    object_list = response.context['object_list']
-    all_dates = [news.date for news in object_list]
-    sorted_dates = sorted(all_dates, reverse=True)
-    assert sorted_dates == all_dates
-
-
-@pytest.mark.django_db
-@pytest.mark.usefixtures('all_comment')
-def test_comments_order(client, news):
-    url = reverse(NEWS_DETAIL_URL, args=(news.id,))
-    response = client.get(url)
+def test_comments_order(client, news_detail_url, all_comment):
+    response = client.get(news_detail_url)
     assert 'news' in response.context
     news = response.context['news']
     all_dates = [comment.created for comment in news.comment_set.all()]
-    sorted_dates = sorted(all_dates)
-    assert sorted_dates == all_dates
+    assert sorted(all_dates) == all_dates
 
 
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    'parametrized_client, note_in_list',
-    (
-        (AUTHOR_CLIENT, True),
-        (CLIENT, False),
-    )
-)
-def test_form_availability_for_different_clients(
-    parametrized_client, note_in_list, news
-):
-    url = reverse(NEWS_DETAIL_URL, args=(news.id,))
-    response = parametrized_client.get(url)
-    assert ('form' in response.context) is note_in_list
+def test_anonymous_client_has_no_form(client, news_detail_url):
+    response = client.get(news_detail_url)
+    assert 'form' not in response.context
+
+
+def test_authorized_client_has_form(author_client, news_detail_url):
+    response = author_client.get(news_detail_url)
+    assert 'form' in response.context
+    assert isinstance(response.context['form'], CommentForm)

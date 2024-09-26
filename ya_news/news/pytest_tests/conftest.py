@@ -1,88 +1,119 @@
-import pytest
 from datetime import datetime, timedelta
 
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
+import pytest
 from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
 
 from news.models import Comment, News
 
-COMMENT_TEXT: str = 'Новый текст комментария'
-
-User = get_user_model()
+NEWS_COUNT_ON_HOME_PAGE = 10
+COMMENTS_COUNT = 10
 
 
 @pytest.fixture
-def author(django_user_model: type[get_user_model()]) -> get_user_model():
+def news_home_url():
+    return reverse('news:home')
+
+
+@pytest.fixture
+def users_login_url():
+    return reverse('users:login')
+
+
+@pytest.fixture
+def users_logout_url():
+    return reverse('users:logout')
+
+
+@pytest.fixture
+def users_signup_url():
+    return reverse('users:signup')
+
+
+@pytest.fixture
+def news_detail_url(news):
+    return reverse('news:detail', args=(news.pk,))
+
+
+@pytest.fixture
+def news_edit_url(comment):
+    return reverse('news:edit', args=(comment.pk,))
+
+
+@pytest.fixture
+def news_delete_url(comment):
+    return reverse('news:delete', args=(comment.pk,))
+
+
+@pytest.fixture(autouse=True)
+def reader(django_user_model):
+    return django_user_model.objects.create(username='Читатель')
+
+
+@pytest.fixture(autouse=True)
+def reader_client(reader):
+    client = Client()
+    client.force_login(reader)
+    return client
+
+
+@pytest.fixture(autouse=True)
+def author(django_user_model):
     return django_user_model.objects.create(username='Автор')
 
 
-@pytest.fixture
-def author_client(author: User, client: Client) -> Client:
+@pytest.fixture(autouse=True)
+def author_client(author):
+    client = Client()
     client.force_login(author)
     return client
 
 
-@pytest.fixture
-def news() -> News:
-    news: News = News.objects.create(
+@pytest.fixture(autouse=True)
+def news():
+    return News.objects.create(
         title='Заголовок',
         text='Текст новости',
     )
-    return news
 
 
-@pytest.fixture
-def comment(author: User, news: News) -> Comment:
-    comment: Comment = Comment.objects.create(
+@pytest.fixture(autouse=True)
+def comment(news, author):
+    return Comment.objects.create(
         news=news,
         author=author,
         text='Текст'
     )
-    return comment
 
 
-@pytest.fixture
-def all_news() -> News:
-    today: datetime = datetime.today()
-    all_news: list[News] = [
+@pytest.fixture(autouse=True)
+def other_comment(news, author):
+    return Comment.objects.create(
+        news=news,
+        author=author,
+        text='Текст',
+    )
+
+
+@pytest.fixture(autouse=True)
+def all_news():
+    today = datetime.today()
+    News.objects.bulk_create(
         News(
             title=f'Новость {index}',
             text='Просто текст.',
             date=today - timedelta(days=index)
         )
-        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
-    ]
-    return News.objects.bulk_create(all_news)
+        for index in range(NEWS_COUNT_ON_HOME_PAGE + 1)
+    )
 
 
-@pytest.fixture
-def all_comment(news: News, author: User):
-    now: timezone.datetime = timezone.now()
-    for index in range(2):
-        comment: Comment = Comment.objects.create(
-            news=news,
-            author=author,
-            text=f'Tекст {index}'
-        )
-        comment.created = now + timedelta(days=index)
-        comment.save()
-
-
-@pytest.fixture
-def form_data():
-    return {'text': COMMENT_TEXT}
-
-
-@pytest.fixture
-def url_to_comments(news: News):
-    url: str = reverse('news:detail', args=(news.id,))
-    return url + '#comments'
-
-
-@pytest.fixture
-def id_for_args(news: News):
-    return news.id,
+@pytest.fixture(autouse=True)
+def all_comment(news, author):
+    now = timezone.now()
+    Comment.objects.bulk_create(
+        Comment(news=news, author=author, text=f'Tекст {index}',
+                created=now + timedelta(days=index))
+        for index in range(COMMENTS_COUNT)
+    )

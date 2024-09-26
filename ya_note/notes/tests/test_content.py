@@ -1,49 +1,36 @@
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
-from django.urls import reverse
+from http import HTTPStatus
 
+from notes.forms import NoteForm
 from notes.models import Note
+from .conftest import TestBase
+from .constants_urls import (
+    URL_NOTES_LIST, URL_NOTES_ADD, URL_NOTES_EDIT,
+    URL_NOTES_ADD, URL_NOTES_EDIT
+)
 
-User = get_user_model()
 
-NOTES_ADD_URL = 'notes:add'
-NOTES_EDIT_URL = 'notes:edit'
-NOTES_LIST_URL = 'notes:list'
-
-
-class TestContent(TestCase):
+class TestContent(TestBase):
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username='Иван Иванов')
-        cls.author_client = Client()
-        cls.author_client.force_login(cls.author)
-        cls.reader = User.objects.create(username='Сергей Петров')
-        cls.reader_client = Client()
-        cls.reader_client.force_login(cls.reader)
-        cls.note = Note.objects.create(
-            title='Заголовок',
-            text='Текст',
-            slug='slug-text',
-            author=cls.author
-        )
+        super().setUpTestData(generate_note=True)
 
-    def test_notes_list_for_different_users(self):
-        response = self.author_client.get(reverse(NOTES_LIST_URL))
-        notes = response.context['object_list']
-        self.assertIn(self.note, notes)
+    def test_notes_list_display(self):
+        self.assertIn(self.note, self.author_client.get(URL_NOTES_LIST)
+                      .context['object_list'])
+        notes = Note.objects.get(id=self.note.id)
+        self.assertEqual(self.note.title, notes.title)
+        self.assertEqual(self.note.text, notes.text)
+        self.assertEqual(self.note.author, notes.author)
+        self.assertEqual(self.note.slug, notes.slug)
 
     def test_note_not_in_list_for_another_user(self):
-        response = self.reader_client.get(reverse(NOTES_LIST_URL))
-        notes = response.context['object_list']
-        self.assertNotIn(self.note, notes)
+        response = self.reader_client.get(URL_NOTES_LIST)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
+        self.assertNotIn(self.note, response.context['object_list'])
 
-    def test_create_edit_note_page_contains_form(self):
-        urls = (
-            (NOTES_ADD_URL, None),
-            (NOTES_EDIT_URL, (self.note.slug,)),
-        )
-        for name, args in urls:
-            with self.subTest(name=name):
-                url = reverse(name, args=args)
+    def test_create_edit_page(self):
+        for url in (URL_NOTES_ADD, URL_NOTES_EDIT):
+            with self.subTest(url=url):
                 response = self.author_client.get(url)
                 self.assertIn('form', response.context)
+                self.assertIsInstance(response.context['form'], NoteForm)
