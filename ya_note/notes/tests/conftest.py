@@ -36,3 +36,9 @@ class TestBase(TestCase):
             author=cls.author,
             slug='Zametka-1'
         )
+
+        cls.form_data_note = {
+            'title': 'Заметка 1',
+            'text': 'Просто текст',
+            'slug': 'Zametka-1'
+        }
