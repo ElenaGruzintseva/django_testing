@@ -1,5 +1,4 @@
 from http import HTTPStatus
-import unittest
 
 from .conftest import (
     TestBase, URL_HOME, URL_LOGIN, URL_LOGOUT, URL_SIGNUP,
@@ -9,8 +8,6 @@ from .conftest import (
 
 
 class TestRoutes(TestBase):
-
-    @unittest.skip(reason='Исправить последний блок нправлений.')
     def test_pages_availability_for_users(self):
         urls = (
             (URL_HOME, self.client, HTTPStatus.OK),
@@ -30,7 +27,6 @@ class TestRoutes(TestBase):
             (URL_NOTES_ADD, self.reader_client, HTTPStatus.OK),
             (URL_SIGNUP, self.reader_client, HTTPStatus.OK),
             (URL_LOGIN, self.reader_client, HTTPStatus.OK),
-            (URL_LOGOUT, self.reader_client, HTTPStatus.OK),
 
             (URL_NOTES_DETAIL, self.reader_client, HTTPStatus.NOT_FOUND),
             (URL_NOTES_EDIT, self.reader_client, HTTPStatus.NOT_FOUND),

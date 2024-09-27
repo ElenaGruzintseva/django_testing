@@ -37,8 +37,8 @@ class TestBase(TestCase):
             slug='Zametka-1'
         )
 
-        cls.form_data_note = {
-            'title': 'Заметка 1',
-            'text': 'Просто текст',
-            'slug': 'Zametka-1'
+        cls.new_created_note = {
+            'title': 'Заметкаа',
+            'text': 'Текст новой заметки',
+            'slug': 'Zametkaa'
         }
