@@ -91,7 +91,7 @@ class TestLogic(TestBase):
         self.assertEqual(start_notes_count, Note.objects.count() + 1)
         self.assertFalse(Note.objects.filter(id=self.note.id).exists())
 
-    @unittest.skip(reason='Не хватает контроля, что запись еще есть в таблице.')
+    # @unittest.skip(reason='')
     def test_user_cant_delete_note_of_another_user(self):
         start_notes_count = Note.objects.count()
         self.assertEqual(
@@ -99,6 +99,7 @@ class TestLogic(TestBase):
                 URL_NOTES_DELETE).status_code, HTTPStatus.NOT_FOUND
         )
         self.assertEqual(start_notes_count, Note.objects.count())
+        self.assertIsInstance(self.note, Note)
         note = Note.objects.get(id=self.note.id)
         self.assertEqual(self.note.author, note.author)
         self.assertEqual(self.note.title, note.title)
