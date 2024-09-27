@@ -35,14 +35,14 @@ class TestLogic(TestBase):
         self.client.post(URL_NOTES_ADD, data=self.new_created_note)
         self.assertEqual(notes, set(Note.objects.all()))
 
-    @unittest.skip(reason='Не хватает явного кода в этом тесте, копирующего слаг из записи в поле формы.')
+    # @unittest.skip(reason='')
     def test_cant_create_note_with_duplicate_slug(self):
         notes = set(Note.objects.all())
-        self.author_client.post(
-            URL_NOTES_ADD,
-            slug=self.note['slug']
-        )
+        self.new_created_note['slug'] = self.note.slug
+        self.author_client.post(URL_NOTES_ADD, data=self.new_created_note)
         self.assertEqual(set(Note.objects.all()), notes)
+
+
 
     @unittest.skip(reason='Перенесите алгоритм: запрос, извлечение созданного, контроль полей - в новый метод.')
     def test_user_can_create_note_without_slug(self):
