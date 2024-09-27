@@ -1,16 +1,15 @@
 from http import HTTPStatus
 
-from .conftest import TestBase
-from .constants_urls import (
-    URL_HOME, URL_LOGIN, URL_LOGOUT, URL_SIGNUP, URL_NOTES_LIST,
-    URL_NOTES_EDIT, URL_NOTES_DETAIL, URL_NOTES_DELETE
+from .conftest import (
+    TestBase, URL_HOME, URL_LOGIN, URL_LOGOUT, URL_SIGNUP,
+    URL_NOTES_LIST, URL_NOTES_EDIT, URL_NOTES_DETAIL, URL_NOTES_DELETE
 )
 
 
 class TestRoutes(TestBase):
     @classmethod
     def setUpTestData(cls):
-        super().setUpTestData(generate_note_list=True)
+        super().setUpTestData()
 
     def test_pages_availability_for_users(self):
         urls = (

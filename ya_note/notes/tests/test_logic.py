@@ -3,9 +3,8 @@ from http import HTTPStatus
 from pytils.translit import slugify
 
 from notes.models import Note
-from .conftest import TestBase
-from .constants_urls import (
-    URL_NOTES_ADD, URL_NOTES_SUCCESS,
+from .conftest import (
+    TestBase, URL_NOTES_ADD, URL_NOTES_SUCCESS,
     URL_NOTES_EDIT, URL_NOTES_DELETE
 )
 
@@ -32,7 +31,7 @@ FORM_DATA_DUPLICATE_SLUG = {
 class TestLogic(TestBase):
     @classmethod
     def setUpTestData(cls):
-        super().setUpTestData(generate_note=True)
+        super().setUpTestData()
 
     def test_user_can_create_note(self):
         notes = set(Note.objects.all())

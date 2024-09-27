@@ -2,17 +2,16 @@ from http import HTTPStatus
 
 from notes.forms import NoteForm
 from notes.models import Note
-from .conftest import TestBase
-from .constants_urls import (
-    URL_NOTES_LIST, URL_NOTES_ADD, URL_NOTES_EDIT,
-    URL_NOTES_ADD, URL_NOTES_EDIT
+from .conftest import (
+    TestBase, URL_NOTES_LIST, URL_NOTES_ADD,
+    URL_NOTES_EDIT, URL_NOTES_ADD, URL_NOTES_EDIT
 )
 
 
 class TestContent(TestBase):
     @classmethod
     def setUpTestData(cls):
-        super().setUpTestData(generate_note=True)
+        super().setUpTestData()
 
     def test_notes_list_display(self):
         self.assertIn(self.note, self.author_client.get(URL_NOTES_LIST)
