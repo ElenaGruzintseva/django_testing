@@ -7,9 +7,6 @@ from .conftest import (
 
 
 class TestRoutes(TestBase):
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
 
     def test_pages_availability_for_users(self):
         urls = (

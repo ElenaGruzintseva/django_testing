@@ -27,11 +27,10 @@ FORM_DATA_DUPLICATE_SLUG = {
     'slug': 'Zametka-1'
 }
 
+# import unittest
+# @unittest.skip(reason='Пока пропускаем.')
 
 class TestLogic(TestBase):
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
 
     def test_user_can_create_note(self):
         notes = set(Note.objects.all())
