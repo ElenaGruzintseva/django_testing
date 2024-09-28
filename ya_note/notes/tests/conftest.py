@@ -43,9 +43,3 @@ class TestBase(TestCase):
             'slug': 'Zametkaa',
             'author': cls.author
         }
-
-        FIELD_NAMES = ('title', 'text', 'slug', 'author')
-        FIELD_DATA = ('Заголовок', 'Текст заметки', SLUG)
-
-        cls.form_data = dict(zip(FIELD_NAMES, FIELD_DATA))
-        cls.field_data = (*FIELD_DATA, cls.author)
