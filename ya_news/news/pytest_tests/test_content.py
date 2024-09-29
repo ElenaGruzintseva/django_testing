@@ -1,14 +1,15 @@
 import pytest
 
+from django.conf import settings
+
 from news.forms import CommentForm
-from news.pytest_tests.conftest import NEWS_COUNT_ON_HOME_PAGE
 
 pytestmark = pytest.mark.django_db
 
 
 def test_news_count(client, news_home_url, all_news):
     assert client.get(news_home_url).context[
-        'object_list'].count() == NEWS_COUNT_ON_HOME_PAGE
+        'object_list'].count() == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
 def test_news_order(client, news_home_url, all_news):
@@ -26,8 +27,7 @@ def test_comments_order(client, news_detail_url, all_comment):
 
 
 def test_anonymous_client_has_no_form(client, news_detail_url):
-    response = client.get(news_detail_url)
-    assert 'form' not in response.context
+    assert 'form' not in client.get(news_detail_url).context
 
 
 def test_authorized_client_has_form(author_client, news_detail_url):

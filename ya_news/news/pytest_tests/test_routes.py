@@ -3,7 +3,6 @@ from http import HTTPStatus
 import pytest
 from pytest_django.asserts import assertRedirects
 
-
 pytestmark = pytest.mark.django_db
 
 
@@ -23,14 +22,23 @@ URL_DELETE_COMMENT = pytest.lazy_fixture('news_delete_url')
     'urls, parametrized_client, expected_status',
     (
         (URL_HOME, ANONYMOUS_CLIENT, HTTPStatus.OK),
-        (URL_NEWS_DETAIL, ANONYMOUS_CLIENT, HTTPStatus.OK),
+        (URL_SIGNUP, ANONYMOUS_CLIENT, HTTPStatus.OK),
         (URL_LOGIN, ANONYMOUS_CLIENT, HTTPStatus.OK),
         (URL_LOGOUT, ANONYMOUS_CLIENT, HTTPStatus.OK),
-        (URL_SIGNUP, ANONYMOUS_CLIENT, HTTPStatus.OK),
-        (URL_EDIT_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
-        (URL_EDIT_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
+        (URL_NEWS_DETAIL, ANONYMOUS_CLIENT, HTTPStatus.OK),
+
+        (URL_NEWS_DETAIL, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_DELETE_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
-        (URL_DELETE_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
+        (URL_EDIT_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
+        (URL_SIGNUP, AUTHOR_CLIENT, HTTPStatus.OK),
+        (URL_LOGIN, AUTHOR_CLIENT, HTTPStatus.OK),
+        (URL_LOGOUT, AUTHOR_CLIENT, HTTPStatus.OK),
+
+        (URL_SIGNUP, READER_CLIENT, HTTPStatus.OK),
+        (URL_LOGIN, READER_CLIENT, HTTPStatus.OK),
+        (URL_NEWS_DETAIL, READER_CLIENT, HTTPStatus.OK),
+        (URL_EDIT_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
+        (URL_DELETE_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND)
     ),
 )
 def test_pages_availability_users(urls, parametrized_client, expected_status):
