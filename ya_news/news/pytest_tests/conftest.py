@@ -98,16 +98,3 @@ def all_news():
         )
         for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
-
-
-@pytest.fixture(autouse=True)
-def all_comment(news, author):
-    now = timezone.now()
-    for index in range(COMMENTS_COUNT):
-        comment = Comment.objects.create(
-            news=news,
-            author=author,
-            text=f'Tекст {index}'
-        )
-        comment.created = now + timedelta(days=index)
-        comment.save()
