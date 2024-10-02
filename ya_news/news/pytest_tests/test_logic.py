@@ -12,10 +12,10 @@ pytestmark = pytest.mark.django_db
 FORM_DATA = {
     'text': 'Текст комментария.'
 }
+
 BAD_WORDS_DATA = {'text': f'Text, {BAD_WORDS[0]}, text'}
 
 
-@pytest.mark.skip(reason='')
 def test_anonymous_user_cant_create_comment(
     client, news_detail_url, news, author
 ):
@@ -26,7 +26,6 @@ def test_anonymous_user_cant_create_comment(
         Comment.objects.get(text=FORM_DATA['text'], news=news, author=author)
 
 
-@pytest.mark.skip(reason='')
 def test_user_can_create_comment(news_detail_url, news, author, author_client):
     comments = set(Comment.objects.all())
     assertRedirects(
@@ -40,29 +39,25 @@ def test_user_can_create_comment(news_detail_url, news, author, author_client):
     assert comment.author == author
 
 
-@pytest.mark.skip(reason='Лучше протестировать каждое запрещенное слово.')
-def test_user_cant_use_bad_words(
-        author_client, news_detail_url
-):
+def test_user_cant_use_bad_words(author_client, news_detail_url):
     comments_count = Comment.objects.count()
-    response = author_client.post(news_detail_url, data=BAD_WORDS_DATA)
-    assertFormError(response, form='form', field='text', errors=WARNING)
-    assert Comment.objects.count() == comments_count
+    for bad_word in BAD_WORDS:
+        response = author_client.post(news_detail_url, data=BAD_WORDS_DATA)
+        assertFormError(response, form='form', field='text', errors=WARNING)
+        assert Comment.objects.count() == comments_count
 
 
-@pytest.mark.skip(reason='')
 def test_author_can_edit_comment(
     author_client, comment, news_edit_url, news_detail_url
 ):
     assertRedirects(
-        author_client.post(news_edit_url, FORM_DATA, news_detail_url))
+        author_client.post(news_edit_url, FORM_DATA), news_detail_url)
     comment_from_db = Comment.objects.get(id=comment.id)
     assert comment_from_db.text == FORM_DATA['text']
     assert comment_from_db.author == comment.author
     assert comment_from_db.news == comment.news
 
 
-@pytest.mark.skip(reason='')
 def test_author_can_delete_comment(
     author_client, news_delete_url, news_detail_url, news, author
 ):
@@ -76,8 +71,6 @@ def test_author_can_delete_comment(
     assert Comment.objects.count() == comments_count - 1
 
 
-
-# @pytest.mark.skip(reason='Сломана. Не хватает контроля всех записи, которую пытались удалить.')
 def test_user_cant_delete_comment_of_another_user(
     reader_client, news_delete_url, news, author
 ):
@@ -94,7 +87,6 @@ def test_user_cant_delete_comment_of_another_user(
     assert Comment.objects.count() == comments_count
 
 
-@pytest.mark.skip(reason='')
 def test_user_cant_edit_comment_of_another_user(
     reader_client, comment, news_edit_url
 ):
