@@ -26,14 +26,15 @@ def test_anonymous_user_cant_create_comment(
         Comment.objects.get(text=FORM_DATA['text'], news=news, author=author)
 
 
-# @pytest.mark.skip(reason='Все урлы нужно рассчитать один раз заранее, до теста, Не хватает контроля, что создана одна запись')
+@pytest.mark.skip(reason='')
 def test_user_can_create_comment(news_detail_url, news, author, author_client):
-    Comment.objects.all().delete()
-    response = author_client.post(news_detail_url, data=FORM_DATA)
-    comment = Comment.objects.get()
-
-    assertRedirects(response, f'{news_detail_url}#comments')
-    assert isinstance(comment, Comment)
+    comments = set(Comment.objects.all())
+    assertRedirects(
+        author_client.post(news_detail_url, data=FORM_DATA), news_detail_url
+    )
+    comments_difference = set(Comment.objects.all()).difference(comments)
+    assert len(comments_difference) == 1
+    comment = comments_difference.pop()
     assert comment.text == FORM_DATA['text']
     assert comment.news == news
     assert comment.author == author
@@ -61,13 +62,17 @@ def test_author_can_edit_comment(
     assert comment_from_db.news == comment.news
 
 
-@pytest.mark.skip(reason='Сломана. Все урлы нужно рассчитать один раз заранее, до теста. Не хватает контроля, что удалилась ожидаемая запись.')
+@pytest.mark.skip(reason='')
 def test_author_can_delete_comment(
-    author_client, news_delete_url, news_detail_url
+    author_client, news_delete_url, news_detail_url, news, author
 ):
+    comment = Comment.objects.create(
+        text=FORM_DATA['text'], news=news, author=author
+    )
     comments_count = Comment.objects.count()
-    response = author_client.delete(news_delete_url)
-    assertRedirects(response, f'{news_detail_url}#comments')
+    assertRedirects(author_client.delete(
+        news_delete_url, data={'comment_id': comment.pk}), news_detail_url
+    )
     assert Comment.objects.count() == comments_count - 1
 
 
