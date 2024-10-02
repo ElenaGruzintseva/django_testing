@@ -76,27 +76,25 @@ def test_author_can_delete_comment(
     assert Comment.objects.count() == comments_count - 1
 
 
-@pytest.mark.skip(reason='Сломана. Не хватает контроля всех записи, которую пытались удалить.')
+
+# @pytest.mark.skip(reason='Сломана. Не хватает контроля всех записи, которую пытались удалить.')
 def test_user_cant_delete_comment_of_another_user(
-    reader_client, author_client, news_detail_url, news_delete_url, comment
+    reader_client, news_delete_url, news, author
 ):
-    assertRedirects(author_client.post(news_detail_url, data=FORM_DATA))
-    assertRedirects(reader_client.delete(news_delete_url, data=FORM_DATA, author=author_client)).status_code == HTTPStatus.NOT_FOUND
-
-    # assert FORM_DATA.text == comment.text
-    # assert FORM_DATA.news == comment.news
-    # assert FORM_DATA.author == comment.author
-    # assert FORM_DATA.created == comment.created
-
-
-
-    # comments_count = Comment.objects.count()
-    # response = reader_client.delete(news_delete_url)
-    # assert response.status_code == HTTPStatus.NOT_FOUND
-    # assert Comment.objects.count() == comments_count
+    comment = Comment.objects.create(
+        text=FORM_DATA['text'], news=news, author=author
+    )
+    comments_count = Comment.objects.count()
+    response = reader_client.delete(news_delete_url, data=comment)
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    comment_from_db = Comment.objects.get(pk=comment.pk)
+    assert comment_from_db.text == FORM_DATA['text']
+    assert comment_from_db.author == comment.author
+    assert comment_from_db.news == comment.news
+    assert Comment.objects.count() == comments_count
 
 
-@pytest.mark.skip(reason='Все урлы нужно рассчитать один раз заранее, до теста, Не хватает контроля, что создана одна запись')
+@pytest.mark.skip(reason='')
 def test_user_cant_edit_comment_of_another_user(
     reader_client, comment, news_edit_url
 ):
