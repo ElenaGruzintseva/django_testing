@@ -26,14 +26,16 @@ def test_anonymous_user_cant_create_comment(
         Comment.objects.get(text=FORM_DATA['text'], news=news, author=author)
 
 
-def test_user_can_create_comment(news_detail_url, news, author, author_client):
+def test_user_can_create_comment(
+        news_detail_url, news, author, author_client, comment_detail_url
+    ):
     comments = set(Comment.objects.all())
     assertRedirects(
-        author_client.post(news_detail_url, data=FORM_DATA), news_detail_url
+        author_client.post(news_detail_url, data=FORM_DATA), comment_detail_url
     )
-    comments_difference = set(Comment.objects.all()).difference(comments)
-    assert len(comments_difference) == 1
-    comment = comments_difference.pop()
+    comments = set(Comment.objects.all()).difference(comments)
+    assert len(comments) == 1
+    comment = comments.pop()
     assert comment.text == FORM_DATA['text']
     assert comment.news == news
     assert comment.author == author
@@ -48,10 +50,10 @@ def test_user_cant_use_bad_words(author_client, news_detail_url):
 
 
 def test_author_can_edit_comment(
-    author_client, comment, news_edit_url, news_detail_url
+    author_client, comment, news_edit_url, comment_detail_url
 ):
     assertRedirects(
-        author_client.post(news_edit_url, FORM_DATA), news_detail_url)
+        author_client.post(news_edit_url, FORM_DATA), comment_detail_url)
     comment_from_db = Comment.objects.get(id=comment.id)
     assert comment_from_db.text == FORM_DATA['text']
     assert comment_from_db.author == comment.author
@@ -59,15 +61,22 @@ def test_author_can_edit_comment(
 
 
 def test_author_can_delete_comment(
-    author_client, news_delete_url, news_detail_url, news, author
+    author_client, news_delete_url, comment_detail_url,
+    news_detail_url, news, author
 ):
-    comment = Comment.objects.create(
-        text=FORM_DATA['text'], news=news, author=author
+    assertRedirects(
+        author_client.post(
+            news_detail_url, data=FORM_DATA), comment_detail_url
     )
     comments_count = Comment.objects.count()
-    assertRedirects(author_client.delete(
-        news_delete_url, data={'comment_id': comment.pk}), news_detail_url
+    comment = Comment.objects.get(
+        text=FORM_DATA['text'], news=news, author=author
     )
+    assertRedirects(author_client.delete(
+        news_delete_url, data=comment), comment_detail_url)
+    assert comment.text == FORM_DATA['text']
+    assert comment.author == author
+    assert comment.news == news
     assert Comment.objects.count() == comments_count - 1
 
 

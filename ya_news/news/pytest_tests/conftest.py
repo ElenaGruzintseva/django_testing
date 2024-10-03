@@ -32,6 +32,11 @@ def users_signup_url():
 
 @pytest.fixture
 def news_detail_url(news):
+    return reverse('news:detail', args=(news.pk,))
+
+
+@pytest.fixture
+def comment_detail_url(news):
     return f"{reverse('news:detail', args=(news.pk,))}#comments"
 
 
