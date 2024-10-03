@@ -18,7 +18,7 @@ def test_news_order(client, news_home_url, all_news):
     assert sorted(all_dates, reverse=True) == all_dates
 
 
-def test_comments_order(client, news_detail_url):
+def test_comments_order(client, news_detail_url, all_comment):
     response = client.get(news_detail_url)
     assert 'news' in response.context
     news = response.context['news']

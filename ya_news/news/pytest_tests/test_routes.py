@@ -16,6 +16,7 @@ URL_LOGOUT = pytest.lazy_fixture('users_logout_url')
 URL_SIGNUP = pytest.lazy_fixture('users_signup_url')
 URL_EDIT_COMMENT = pytest.lazy_fixture('news_edit_url')
 URL_DELETE_COMMENT = pytest.lazy_fixture('news_delete_url')
+COMMENT_DETAIL_URL = pytest.lazy_fixture('comment_detail_url')
 
 
 @pytest.mark.parametrize(
@@ -33,12 +34,13 @@ URL_DELETE_COMMENT = pytest.lazy_fixture('news_delete_url')
         (URL_SIGNUP, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_LOGIN, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_LOGOUT, AUTHOR_CLIENT, HTTPStatus.OK),
+        (COMMENT_DETAIL_URL, AUTHOR_CLIENT, HTTPStatus.OK),
 
         (URL_SIGNUP, READER_CLIENT, HTTPStatus.OK),
         (URL_LOGIN, READER_CLIENT, HTTPStatus.OK),
         (URL_NEWS_DETAIL, READER_CLIENT, HTTPStatus.OK),
         (URL_EDIT_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
-        (URL_DELETE_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND)
+        (URL_DELETE_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
     ),
 )
 def test_pages_availability_users(urls, parametrized_client, expected_status):
