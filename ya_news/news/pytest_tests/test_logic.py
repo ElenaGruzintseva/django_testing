@@ -88,7 +88,7 @@ def test_author_can_delete_comment(
     assert Comment.objects.count() == comments_count - 1
 
 
-@pytest.mark.skip(reason='Исправлено')
+@pytest.mark.skip(reason='self.assertFalse(Note.objects.filter(id=self.note.id).exists())')
 def test_user_cant_delete_comment_of_another_user(
     reader_client, news_delete_url, news, author,
     author_client, comment_detail_url, news_detail_url

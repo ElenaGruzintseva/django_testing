@@ -41,5 +41,4 @@ class TestBase(TestCase):
             'title': 'Заметкаа',
             'text': 'Текст новой заметки',
             'slug': 'Zametkaa',
-            'author': cls.author
         }

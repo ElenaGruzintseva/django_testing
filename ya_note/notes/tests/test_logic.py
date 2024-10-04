@@ -9,46 +9,34 @@ from .conftest import (
 )
 
 
-class CreatedNote(TestBase):
-
-    def method_created_note(self, field_data):
-        note = Note.objects.get(title=field_data['title'])
-        data = dict(field_data)
-        for key, value in data.items():
-            with self.subTest(key=key, value=value):
-                self.assertEqual(note.title, data['title'])
-                self.assertEqual(note.text, data['text'])
-                self.assertEqual(note.slug, data['slug'])
-                self.assertEqual(note.author, self.author)
-
-    def equal(self, expected_count):
-        notes_count = Note.objects.count()
-        self.assertEqual(expected_count, notes_count)
-
-
-class TestLogic(CreatedNote):
+class TestLogic(TestBase):
 
     def test_user_can_create_note(self):
-        expected_count = Note.objects.count() + 1
+        notes = set(Note.objects.all())
         self.assertRedirects(
-            self.author_client.post(URL_NOTES_ADD, data=self.new_created_note),
-            URL_NOTES_SUCCESS)
-        super().equal(expected_count)
-        super().method_created_note(self.new_created_note)
+            self.author_client.post(
+                URL_NOTES_ADD, data=self.new_created_note), URL_NOTES_SUCCESS
+        )
+        notes = set(Note.objects.all()).difference(notes)
+        assert len(notes) == 1
+        note = notes.pop()
+        assert note.title == self.new_created_note['title']
+        assert note.text == self.new_created_note['text']
+        assert note.slug == self.new_created_note['slug']
 
     def test_user_can_create_note_without_slug(self):
-        expected_count = Note.objects.count() + 1
+        notes = set(Note.objects.all())
         self.new_created_note.pop('slug')
         self.assertRedirects(
             self.author_client.post(URL_NOTES_ADD, data=self.new_created_note),
             URL_NOTES_SUCCESS)
-        super().equal(expected_count)
-        new_created_note = Note.objects.get(
-            title=self.new_created_note['title']
-        )
-        self.assertEqual(
-            new_created_note.slug, slugify(self.new_created_note['title'])
-        )
+        notes = set(Note.objects.all()).difference(notes)
+        assert len(notes) == 1
+        note = notes.pop()
+        self.assertEqual(note.slug, slugify(self.new_created_note['title']))
+        assert note.title == self.new_created_note['title']
+        assert note.text == self.new_created_note['text']
+        assert note.author == self.author
 
     def test_anonymous_user_cant_create_note(self):
         expected_count = Note.objects.count()
