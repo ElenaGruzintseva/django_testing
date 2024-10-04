@@ -3,17 +3,11 @@ from http import HTTPStatus
 import pytest
 from pytest_django.asserts import assertRedirects, assertFormError
 
-from news.forms import BAD_WORDS, WARNING
+from news.forms import WARNING
 from news.models import Comment
+from news.pytest_tests.conftest import FORM_DATA
 
 pytestmark = pytest.mark.django_db
-
-
-FORM_DATA = {
-    'text': 'Текст комментария.'
-}
-
-BAD_WORDS_DATA = {'text': f'Text, {BAD_WORDS}, text'}
 
 
 def test_anonymous_user_cant_create_comment(
@@ -45,15 +39,19 @@ def test_user_can_create_comment(
     assert comment.author == author
 
 
-@pytest.mark.skip(reason='ЗАПРЕЩЕННЫЕ СЛОВА')
-@pytest.mark.parametrize('bad_word', BAD_WORDS)
-def test_user_cant_use_bad_words(bad_word, news_detail_url, author_client):
+def test_user_cant_use_bad_words(
+    author_client, news_detail_url, author, news, bad_word, bad_words_data
+):
     initial_comments = list(Comment.objects.all())
-    bad_word_data = {'text': f'Text, {bad_word}, text'}
-    response = author_client.post(news_detail_url, data=bad_word_data)
+    response = author_client.post(news_detail_url, data=bad_words_data)
     assertFormError(response, form='form', field='text', errors=WARNING)
     final_comments = list(Comment.objects.all())
     assert initial_comments == final_comments
+    for initial_comment, final_comment in zip(initial_comments,
+                                              final_comments):
+        assert initial_comment.text == final_comment.text
+        assert initial_comment.news == final_comment.news
+        assert initial_comment.author == final_comment.author
 
 
 def test_author_can_edit_comment(
@@ -67,7 +65,6 @@ def test_author_can_edit_comment(
     assert comment_from_db.news == comment.news
 
 
-@pytest.mark.skip(reason='Исправлено')
 def test_author_can_delete_comment(
     author_client, news_delete_url, comment_detail_url,
     news_detail_url, news, author
@@ -88,7 +85,6 @@ def test_author_can_delete_comment(
     assert Comment.objects.count() == comments_count - 1
 
 
-@pytest.mark.skip(reason='self.assertFalse(Note.objects.filter(id=self.note.id).exists())')
 def test_user_cant_delete_comment_of_another_user(
     reader_client, news_delete_url, news, author,
     author_client, comment_detail_url, news_detail_url

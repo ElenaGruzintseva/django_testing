@@ -36,6 +36,7 @@ COMMENT_DETAIL_URL = pytest.lazy_fixture('comment_detail_url')
         (URL_LOGOUT, AUTHOR_CLIENT, HTTPStatus.OK),
         (COMMENT_DETAIL_URL, AUTHOR_CLIENT, HTTPStatus.OK),
 
+        (URL_HOME, READER_CLIENT, HTTPStatus.OK),
         (URL_SIGNUP, READER_CLIENT, HTTPStatus.OK),
         (URL_LOGIN, READER_CLIENT, HTTPStatus.OK),
         (URL_NEWS_DETAIL, READER_CLIENT, HTTPStatus.OK),

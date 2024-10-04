@@ -15,33 +15,33 @@ class TestLogic(TestBase):
         notes = set(Note.objects.all())
         self.assertRedirects(
             self.author_client.post(
-                URL_NOTES_ADD, data=self.new_created_note), URL_NOTES_SUCCESS
+                URL_NOTES_ADD, data=self.nota), URL_NOTES_SUCCESS
         )
         notes = set(Note.objects.all()).difference(notes)
         self.assertEqual(len(notes), 1)
         note = notes.pop()
-        self.assertEqual(note.title, self.new_created_note['title'])
-        self.assertEqual(note.text, self.new_created_note['text'])
-        self.assertEqual(note.slug, self.new_created_note['slug'])
+        self.assertEqual(note.title, self.nota['title'])
+        self.assertEqual(note.text, self.nota['text'])
+        self.assertEqual(note.slug, self.nota['slug'])
         self.assertEqual(note.author, self.author)
 
     def test_user_can_create_note_without_slug(self):
         notes = set(Note.objects.all())
-        self.new_created_note.pop('slug')
+        self.nota.pop('slug')
         self.assertRedirects(
-            self.author_client.post(URL_NOTES_ADD, data=self.new_created_note),
+            self.author_client.post(URL_NOTES_ADD, data=self.nota),
             URL_NOTES_SUCCESS)
         notes = set(Note.objects.all()).difference(notes)
         self.assertEqual(len(notes), 1)
         note = notes.pop()
-        self.assertEqual(note.slug, slugify(self.new_created_note['title']))
-        self.assertEqual(note.title, self.new_created_note['title'])
-        self.assertEqual(note.text, self.new_created_note['text'])
+        self.assertEqual(note.slug, slugify(self.nota['title']))
+        self.assertEqual(note.title, self.nota['title'])
+        self.assertEqual(note.text, self.nota['text'])
         self.assertEqual(note.author, self.author)
 
     def test_anonymous_user_cant_create_note(self):
         initial_notes = set(Note.objects.all())
-        self.reader_client.post(URL_NOTES_ADD, data=self.new_created_note)
+        self.reader_client.post(URL_NOTES_ADD, data=self.nota)
         final_notes = list(Note.objects.all())
         for initial_comment, final_comment in zip(initial_notes,
                                                   final_notes):
@@ -51,8 +51,8 @@ class TestLogic(TestBase):
 
     def test_cant_create_note_with_duplicate_slug(self):
         initial_notes = list(Note.objects.all())
-        self.new_created_note['slug'] = self.note.slug
-        self.author_client.post(URL_NOTES_ADD, data=self.new_created_note)
+        self.nota['slug'] = self.note.slug
+        self.author_client.post(URL_NOTES_ADD, data=self.nota)
         final_notes = list(Note.objects.all())
         for initial_comment, final_comment in zip(initial_notes,
                                                   final_notes):
@@ -63,18 +63,18 @@ class TestLogic(TestBase):
     def test_author_can_edit_note(self):
         self.assertEqual(
             self.author_client.post(
-                URL_NOTES_EDIT, data=self.new_created_note
+                URL_NOTES_EDIT, data=self.nota
             ).status_code, HTTPStatus.FOUND
         )
         note = Note.objects.get(id=self.note.id)
-        self.assertEqual(note.title, self.new_created_note['title'])
-        self.assertEqual(note.text, self.new_created_note['text'])
-        self.assertEqual(note.slug, self.new_created_note['slug'])
+        self.assertEqual(note.title, self.nota['title'])
+        self.assertEqual(note.text, self.nota['text'])
+        self.assertEqual(note.slug, self.nota['slug'])
         self.assertEqual(note.author, self.note.author)
 
     def test_user_cant_edit_note_of_another_user(self):
         self.assertEqual(self.reader_client.post(
-            URL_NOTES_EDIT, data=self.new_created_note
+            URL_NOTES_EDIT, data=self.nota
         ).status_code, HTTPStatus.NOT_FOUND)
         note = Note.objects.get(id=self.note.id)
         self.assertEqual(self.note.author, note.author)
@@ -91,18 +91,18 @@ class TestLogic(TestBase):
     def test_user_cant_delete_note_of_another_user(self):
         notes = set(Note.objects.all())
         self.author_client.post(
-            URL_NOTES_ADD, data=self.new_created_note)
+            URL_NOTES_ADD, data=self.nota)
         notes = set(Note.objects.all()).difference(notes)
         self.assertEqual(len(notes), 1)
         note = notes.pop()
-        self.assertEqual(note.title, self.new_created_note['title'])
-        self.assertEqual(note.text, self.new_created_note['text'])
+        self.assertEqual(note.title, self.nota['title'])
+        self.assertEqual(note.text, self.nota['text'])
         self.assertEqual(note.author, self.author)
-        self.assertEqual(note.slug, self.new_created_note['slug'])
+        self.assertEqual(note.slug, self.nota['slug'])
         response = self.reader_client.delete(URL_NOTES_DELETE, data=note)
         assert response.status_code == HTTPStatus.NOT_FOUND
         note = Note.objects.get(id=note.id)
-        self.assertEqual(note.title, self.new_created_note['title'])
-        self.assertEqual(note.text, self.new_created_note['text'])
+        self.assertEqual(note.title, self.nota['title'])
+        self.assertEqual(note.text, self.nota['text'])
         self.assertEqual(note.author, self.author)
-        self.assertEqual(note.slug, self.new_created_note['slug'])
+        self.assertEqual(note.slug, self.nota['slug'])

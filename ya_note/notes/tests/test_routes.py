@@ -22,11 +22,12 @@ class TestRoutes(TestBase):
             (URL_LOGIN, self.author_client, HTTPStatus.OK),
             (URL_LOGOUT, self.author_client, HTTPStatus.OK),
 
+            (URL_HOME, self.reader_client, HTTPStatus.OK),
+            (URL_SIGNUP, self.reader_client, HTTPStatus.OK),
+            (URL_LOGIN, self.reader_client, HTTPStatus.OK),
             (URL_NOTES_LIST, self.reader_client, HTTPStatus.OK),
             (URL_NOTES_SUCCESS, self.reader_client, HTTPStatus.OK),
             (URL_NOTES_ADD, self.reader_client, HTTPStatus.OK),
-            (URL_SIGNUP, self.reader_client, HTTPStatus.OK),
-            (URL_LOGIN, self.reader_client, HTTPStatus.OK),
 
             (URL_NOTES_DETAIL, self.reader_client, HTTPStatus.NOT_FOUND),
             (URL_NOTES_EDIT, self.reader_client, HTTPStatus.NOT_FOUND),

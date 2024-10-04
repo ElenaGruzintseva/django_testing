@@ -7,8 +7,17 @@ from django.urls import reverse
 from django.utils import timezone
 
 from news.models import Comment, News
+from news.forms import BAD_WORDS
 
 COMMENTS_COUNT = 10
+
+FORM_DATA = {
+    'text': 'Текст комментария.'
+}
+
+WARNING = 'Не ругайтесь!'
+
+BAD_WORDS_DATA = {'text': f'Text, {BAD_WORDS}, text'}
 
 
 @pytest.fixture
@@ -90,6 +99,16 @@ def comment(news, author):
         author=author,
         text='Текст'
     )
+
+
+@pytest.fixture(params=BAD_WORDS)
+def bad_word(request):
+    return request.param
+
+
+@pytest.fixture
+def bad_words_data(bad_word):
+    return {'text': f'Text, {bad_word}, text'}
 
 
 @pytest.fixture(autouse=True)
