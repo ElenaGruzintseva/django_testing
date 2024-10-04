@@ -39,9 +39,14 @@ class TestLogic(TestBase):
         assert note.author == self.author
 
     def test_anonymous_user_cant_create_note(self):
-        expected_count = Note.objects.count()
-        self.client.post(URL_NOTES_ADD, data=self.new_created_note)
-        super().equal(expected_count)
+        initial_comments = list(Note.objects.all())
+        self.reader_client.post(URL_NOTES_ADD, data=self.new_created_note)
+        final_comments = list(Note.objects.all())
+        for initial_comment, final_comment in zip(initial_comments,
+                                                  final_comments):
+            assert initial_comment.title == final_comment.title
+            assert initial_comment.text == final_comment.text
+            assert initial_comment.author == final_comment.author
 
     def test_cant_create_note_with_duplicate_slug(self):
         expected_count = Note.objects.count()
