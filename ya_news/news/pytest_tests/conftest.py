@@ -42,8 +42,8 @@ def comment_detail_url(news):
 
 
 @pytest.fixture
-def redirect_url(expected_status, urls):
-    return f'{expected_status}?next={urls}'
+def redirect_url(urls, users_login_url):
+    return f"{users_login_url}?next={urls}"
 
 
 @pytest.fixture
