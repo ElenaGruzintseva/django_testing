@@ -17,7 +17,8 @@ URL_SIGNUP = pytest.lazy_fixture('users_signup_url')
 URL_EDIT_COMMENT = pytest.lazy_fixture('news_edit_url')
 URL_DELETE_COMMENT = pytest.lazy_fixture('news_delete_url')
 COMMENT_DETAIL_URL = pytest.lazy_fixture('comment_detail_url')
-REDIRECT_URL = pytest.lazy_fixture('redirect_url')
+URL_EDIT_REDIRECT = pytest.lazy_fixture('url_edit_redirect')
+URL_DELETE_REDIRECT = pytest.lazy_fixture('url_delete_redirect')
 
 
 @pytest.mark.parametrize(
@@ -29,24 +30,30 @@ REDIRECT_URL = pytest.lazy_fixture('redirect_url')
         (URL_LOGOUT, ANONYMOUS_CLIENT, HTTPStatus.OK),
         (URL_NEWS_DETAIL, ANONYMOUS_CLIENT, HTTPStatus.OK),
         (COMMENT_DETAIL_URL, ANONYMOUS_CLIENT, HTTPStatus.OK),
+        (URL_EDIT_REDIRECT, ANONYMOUS_CLIENT, HTTPStatus.OK),
+        (URL_DELETE_REDIRECT, ANONYMOUS_CLIENT, HTTPStatus.OK),
 
         (URL_HOME, AUTHOR_CLIENT, HTTPStatus.OK),
-        (URL_NEWS_DETAIL, AUTHOR_CLIENT, HTTPStatus.OK),
-        (URL_DELETE_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
-        (URL_EDIT_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_SIGNUP, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_LOGIN, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_LOGOUT, AUTHOR_CLIENT, HTTPStatus.OK),
+        (URL_NEWS_DETAIL, AUTHOR_CLIENT, HTTPStatus.OK),
         (COMMENT_DETAIL_URL, AUTHOR_CLIENT, HTTPStatus.OK),
+        (URL_EDIT_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
+        (URL_DELETE_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
+        (URL_EDIT_REDIRECT, AUTHOR_CLIENT, HTTPStatus.OK),
+        (URL_DELETE_REDIRECT, AUTHOR_CLIENT, HTTPStatus.OK),
 
         (URL_HOME, READER_CLIENT, HTTPStatus.OK),
         (URL_SIGNUP, READER_CLIENT, HTTPStatus.OK),
         (URL_LOGIN, READER_CLIENT, HTTPStatus.OK),
+        (URL_LOGOUT, READER_CLIENT, HTTPStatus.OK),
         (URL_NEWS_DETAIL, READER_CLIENT, HTTPStatus.OK),
+        (COMMENT_DETAIL_URL, READER_CLIENT, HTTPStatus.OK),
         (URL_EDIT_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
         (URL_DELETE_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
-        (COMMENT_DETAIL_URL, READER_CLIENT, HTTPStatus.OK),
-        (URL_LOGOUT, READER_CLIENT, HTTPStatus.OK),
+        (URL_EDIT_REDIRECT, READER_CLIENT, HTTPStatus.OK),
+        (URL_DELETE_REDIRECT, READER_CLIENT, HTTPStatus.OK),
     ),
 )
 def test_pages_availability_users(urls, parametrized_client, expected_status):
@@ -54,11 +61,11 @@ def test_pages_availability_users(urls, parametrized_client, expected_status):
 
 
 @pytest.mark.parametrize(
-    'urls, parametrized_client',
+    'urls, parametrized_client, excepted_status',
     (
-        (URL_EDIT_COMMENT, ANONYMOUS_CLIENT),
-        (URL_DELETE_COMMENT, ANONYMOUS_CLIENT)
+        (URL_EDIT_COMMENT, ANONYMOUS_CLIENT, URL_EDIT_REDIRECT),
+        (URL_DELETE_COMMENT, ANONYMOUS_CLIENT, URL_DELETE_REDIRECT)
     )
 )
-def test_redirects(urls, parametrized_client, redirect_url):
-    assertRedirects(parametrized_client.get(urls), redirect_url)
+def test_redirects(urls, parametrized_client, excepted_status):
+    assertRedirects(parametrized_client.get(urls), excepted_status)

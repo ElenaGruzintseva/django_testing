@@ -10,12 +10,6 @@ BAD_WORDS = (
 
 WARNING = 'Не ругайтесь!'
 
-FORM_DATA = {
-    'text': 'Текст комментария.'
-}
-
-BAD_WORDS_DATA = {'text': f'Text, {BAD_WORDS[0]}, text'}
-
 
 class CommentForm(ModelForm):
 

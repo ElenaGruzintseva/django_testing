@@ -42,8 +42,13 @@ def comment_detail_url(news):
 
 
 @pytest.fixture
-def redirect_url(urls, users_login_url):
-    return f"{users_login_url}?next={urls}"
+def url_edit_redirect(news_edit_url, users_login_url):
+    return f"{users_login_url}?next={news_edit_url}"
+
+
+@pytest.fixture
+def url_delete_redirect(news_delete_url, users_login_url):
+    return f"{users_login_url}?next={news_delete_url}"
 
 
 @pytest.fixture

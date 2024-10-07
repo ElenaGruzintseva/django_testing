@@ -5,9 +5,15 @@ from pytest_django.asserts import assertRedirects, assertFormError
 
 from news.forms import WARNING
 from news.models import Comment
-from news.forms import BAD_WORDS, BAD_WORDS_DATA, FORM_DATA
+from news.forms import BAD_WORDS
 
 pytestmark = pytest.mark.django_db
+
+FORM_DATA = {
+    'text': 'Текст комментария.'
+}
+
+BAD_WORDS_DATA = {'text': f'Text, {BAD_WORDS[0]}, text'}
 
 
 def test_anonymous_user_cant_create_comment(
