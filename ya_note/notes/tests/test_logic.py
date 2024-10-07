@@ -51,10 +51,10 @@ class TestLogic(TestBase):
             self.assertEqual(note.slug != self.field_form['slug'])
 
     def test_cant_create_note_with_duplicate_slug(self):
-        initial_notes = list(Note.objects.all())
+        initial_notes = set(Note.objects.all())
         self.field_form['slug'] = self.note.slug
         self.author_client.post(URL_NOTES_ADD, data=self.field_form)
-        final_notes = list(Note.objects.all())
+        final_notes = set(Note.objects.all())
         new_notes = final_notes - initial_notes
         for note in new_notes:
             self.assertEqual(note.text != self.field_form['text'])
