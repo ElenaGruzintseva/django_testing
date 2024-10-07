@@ -60,7 +60,7 @@ def test_pages_availability_users(urls, parametrized_client, expected_status):
         (URL_DELETE_COMMENT, ANONYMOUS_CLIENT, URL_LOGIN)
     )
 )
-def test_redirects(urls, parametrized_client, expected_status):
+def test_redirects(urls, parametrized_client, redirect_url):
     assertRedirects(
-        parametrized_client.get(urls), f'{expected_status}?next={urls}'
+        parametrized_client.get(urls), redirect_url
     )

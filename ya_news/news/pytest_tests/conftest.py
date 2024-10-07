@@ -42,6 +42,11 @@ def comment_detail_url(news):
 
 
 @pytest.fixture
+def redirect_url(expected_status, urls):
+    return f'{expected_status}?next={urls}'
+
+
+@pytest.fixture
 def news_edit_url(comment):
     return reverse('news:edit', args=(comment.pk,))
 

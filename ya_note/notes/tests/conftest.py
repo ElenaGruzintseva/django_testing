@@ -34,10 +34,10 @@ class TestBase(TestCase):
             title='Заметка 1',
             text='Просто текст',
             author=cls.author,
-            slug='Zametka-1'
+            slug=SLUG
         )
 
-        cls.nota = {
+        cls.someones_note = {
             'title': 'Заметкаа',
             'text': 'Текст новой заметки',
             'slug': 'Zametkaa',
