@@ -27,7 +27,9 @@ COMMENT_DETAIL_URL = pytest.lazy_fixture('comment_detail_url')
         (URL_LOGIN, ANONYMOUS_CLIENT, HTTPStatus.OK),
         (URL_LOGOUT, ANONYMOUS_CLIENT, HTTPStatus.OK),
         (URL_NEWS_DETAIL, ANONYMOUS_CLIENT, HTTPStatus.OK),
+        (COMMENT_DETAIL_URL, ANONYMOUS_CLIENT, HTTPStatus.OK),
 
+        (URL_HOME, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_NEWS_DETAIL, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_DELETE_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_EDIT_COMMENT, AUTHOR_CLIENT, HTTPStatus.OK),
@@ -42,11 +44,13 @@ COMMENT_DETAIL_URL = pytest.lazy_fixture('comment_detail_url')
         (URL_NEWS_DETAIL, READER_CLIENT, HTTPStatus.OK),
         (URL_EDIT_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
         (URL_DELETE_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
+        (COMMENT_DETAIL_URL, READER_CLIENT, HTTPStatus.OK),
+        (URL_LOGOUT, READER_CLIENT, HTTPStatus.OK),
+
     ),
 )
 def test_pages_availability_users(urls, parametrized_client, expected_status):
-    response = parametrized_client.get(urls)
-    assert response.status_code == expected_status
+    assert parametrized_client.get(urls).status_code == expected_status
 
 
 @pytest.mark.parametrize(
@@ -57,5 +61,6 @@ def test_pages_availability_users(urls, parametrized_client, expected_status):
     )
 )
 def test_redirects(urls, parametrized_client, expected_status):
-    response = parametrized_client.get(urls)
-    assertRedirects(response, f'{expected_status}?next={urls}')
+    assertRedirects(
+        parametrized_client.get(urls), f'{expected_status}?next={urls}'
+    )
