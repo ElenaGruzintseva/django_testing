@@ -37,7 +37,7 @@ class TestBase(TestCase):
             slug=SLUG
         )
 
-        cls.someones_note = {
+        cls.field_form = {
             'title': 'Заметкаа',
             'text': 'Текст новой заметки',
             'slug': 'Zametkaa',
