@@ -41,26 +41,18 @@ class TestLogic(TestBase):
 
     def test_anonymous_user_cant_create_note(self):
         initial_notes = set(Note.objects.all())
-        self.client.post(URL_NOTES_ADD, data=self.field_form)
+        self.client.post(URL_NOTES_ADD, data={'text': self.field_form})
         final_notes = set(Note.objects.all())
-        new_notes = final_notes - initial_notes
-        for note in new_notes:
-            self.assertEqual(note.text != self.field_form['text'])
-            self.assertEqual(note.title != self.field_form['title'])
-            self.assertEqual(note.author != self.field_form.author)
-            self.assertEqual(note.slug != self.field_form['slug'])
+        self.assertEqual(initial_notes, final_notes)
+        self.assertFalse(Note.objects.filter(text=self.field_form).exists())
 
     def test_cant_create_note_with_duplicate_slug(self):
         initial_notes = set(Note.objects.all())
         self.field_form['slug'] = self.note.slug
-        self.author_client.post(URL_NOTES_ADD, data=self.field_form)
+        self.author_client.post(URL_NOTES_ADD, data={'text': self.field_form})
         final_notes = set(Note.objects.all())
-        new_notes = final_notes - initial_notes
-        for note in new_notes:
-            self.assertEqual(note.text != self.field_form['text'])
-            self.assertEqual(note.title != self.field_form['title'])
-            self.assertEqual(note.author != self.field_form.author)
-            self.assertEqual(note.slug != self.field_form['slug'])
+        self.assertEqual(initial_notes, final_notes)
+        self.assertFalse(Note.objects.filter(text=self.field_form).exists())
 
     def test_author_can_edit_note(self):
         self.assertEqual(
@@ -95,9 +87,10 @@ class TestLogic(TestBase):
         response = self.reader_client.delete(URL_NOTES_DELETE, data=self.note)
         assert response.status_code == HTTPStatus.NOT_FOUND
         final_notes = set(Note.objects.all())
-        new_notes = final_notes - initial_notes
-        for note in new_notes:
-            self.assertEqual(note.text != self.field_form['text'])
-            self.assertEqual(note.title != self.field_form['title'])
-            self.assertEqual(note.author != self.field_form.author)
-            self.assertEqual(note.slug != self.field_form['slug'])
+        self.assertEqual(initial_notes, final_notes)
+        self.assertTrue(Note.objects.filter(id=self.note.id).exists())
+        note_from_db = Note.objects.get(id=self.note.id)
+        self.assertEqual(note_from_db.author, self.note.author)
+        self.assertEqual(note_from_db.title, self.note.title)
+        self.assertEqual(note_from_db.text, self.note.text)
+        self.assertEqual(note_from_db.slug, self.note.slug)

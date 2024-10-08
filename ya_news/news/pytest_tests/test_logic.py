@@ -13,20 +13,16 @@ FORM_DATA = {
     'text': 'Текст комментария.'
 }
 
-BAD_WORDS_DATA = {'text': f'Text, {BAD_WORDS[0]}, text'}
+BAD_WORDS_DATA = {'text': ' '.join(BAD_WORDS)}
 
 
 def test_anonymous_user_cant_create_comment(
-    client, news_detail_url, news, author
+    client, news_detail_url
 ):
     initial_comments = set(Comment.objects.all())
-    client.post(news_detail_url, data=FORM_DATA)
-    final_comments = set(Comment.objects.all())
-    new_comments = final_comments - initial_comments
-    for comment in new_comments:
-        assert comment.text != FORM_DATA['text']
-        assert comment.news != news
-        assert comment.author != author
+    client.post(news_detail_url, data={'text': FORM_DATA['text']})
+    assert initial_comments == set(Comment.objects.all())
+    assert not Comment.objects.filter(text=FORM_DATA['text']).exists()
 
 
 def test_user_can_create_comment(
@@ -45,18 +41,13 @@ def test_user_can_create_comment(
 
 
 def test_user_cant_use_bad_words(
-    author_client, news_detail_url, news, author
+    author_client, news_detail_url
 ):
     initial_comments = set(Comment.objects.all())
-    bad_words_data = {'text': f'Text, {BAD_WORDS}, text'}
-    response = author_client.post(news_detail_url, data=bad_words_data)
+    response = author_client.post(news_detail_url, data=BAD_WORDS_DATA)
     assertFormError(response, form='form', field='text', errors=WARNING)
-    final_comments = set(Comment.objects.all())
-    new_comments = final_comments - initial_comments
-    for comment in new_comments:
-        assert comment.text != FORM_DATA['text']
-        assert comment.news != news
-        assert comment.author != author
+    assert initial_comments == set(Comment.objects.all())
+    assert not Comment.objects.filter(text=FORM_DATA['text']).exists()
 
 
 def test_author_can_edit_comment(
@@ -91,6 +82,10 @@ def test_user_cant_delete_comment_of_another_user(
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert expected_count == Comment.objects.count()
     assert Comment.objects.filter(pk=comment.pk).exists()
+    comment_from_db = Comment.objects.get(id=comment.id)
+    assert comment_from_db.text == comment.text
+    assert comment_from_db.author == comment.author
+    assert comment_from_db.news == comment.news
 
 
 def test_user_cant_edit_comment_of_another_user(
