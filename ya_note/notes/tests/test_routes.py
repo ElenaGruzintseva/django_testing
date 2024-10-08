@@ -14,6 +14,9 @@ class TestRoutes(TestBase):
             (URL_SIGNUP, self.client, HTTPStatus.OK),
             (URL_LOGIN, self.client, HTTPStatus.OK),
             (URL_LOGOUT, self.client, HTTPStatus.OK),
+            (URL_NOTES_ADD, self.client, HTTPStatus.FOUND),
+            (URL_NOTES_LIST, self.client, HTTPStatus.FOUND),
+            (URL_NOTES_SUCCESS, self.client, HTTPStatus.FOUND),
 
             (URL_NOTES_DETAIL, self.author_client, HTTPStatus.OK),
             (URL_NOTES_DELETE, self.author_client, HTTPStatus.OK),
