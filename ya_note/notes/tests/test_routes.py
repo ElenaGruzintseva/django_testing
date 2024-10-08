@@ -17,6 +17,9 @@ class TestRoutes(TestBase):
             (URL_NOTES_ADD, self.client, HTTPStatus.FOUND),
             (URL_NOTES_LIST, self.client, HTTPStatus.FOUND),
             (URL_NOTES_SUCCESS, self.client, HTTPStatus.FOUND),
+            (URL_NOTES_DETAIL, self.client, HTTPStatus.FOUND),
+            (URL_NOTES_DELETE, self.client, HTTPStatus.FOUND),
+            (URL_NOTES_EDIT, self.client, HTTPStatus.FOUND),
 
             (URL_NOTES_DETAIL, self.author_client, HTTPStatus.OK),
             (URL_NOTES_DELETE, self.author_client, HTTPStatus.OK),

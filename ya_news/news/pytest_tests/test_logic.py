@@ -13,16 +13,13 @@ FORM_DATA = {
     'text': 'Текст комментария.'
 }
 
-BAD_WORDS_DATA = {'text': ' '.join(BAD_WORDS)}
-
 
 def test_anonymous_user_cant_create_comment(
     client, news_detail_url
 ):
     initial_comments = set(Comment.objects.all())
-    client.post(news_detail_url, data={'text': FORM_DATA['text']})
+    client.post(news_detail_url, data=FORM_DATA)
     assert initial_comments == set(Comment.objects.all())
-    assert not Comment.objects.filter(text=FORM_DATA['text']).exists()
 
 
 def test_user_can_create_comment(
@@ -44,10 +41,10 @@ def test_user_cant_use_bad_words(
     author_client, news_detail_url
 ):
     initial_comments = set(Comment.objects.all())
-    response = author_client.post(news_detail_url, data=BAD_WORDS_DATA)
-    assertFormError(response, form='form', field='text', errors=WARNING)
-    assert initial_comments == set(Comment.objects.all())
-    assert not Comment.objects.filter(text=FORM_DATA['text']).exists()
+    for bad_word in BAD_WORDS:
+        response = author_client.post(news_detail_url, data={'text': bad_word})
+        assertFormError(response, form='form', field='text', errors=WARNING)
+        assert initial_comments == set(Comment.objects.all())
 
 
 def test_author_can_edit_comment(

@@ -42,17 +42,13 @@ class TestLogic(TestBase):
     def test_anonymous_user_cant_create_note(self):
         initial_notes = set(Note.objects.all())
         self.client.post(URL_NOTES_ADD, data={'text': self.field_form})
-        final_notes = set(Note.objects.all())
-        self.assertEqual(initial_notes, final_notes)
-        self.assertFalse(Note.objects.filter(text=self.field_form).exists())
+        self.assertEqual(initial_notes, set(Note.objects.all()))
 
     def test_cant_create_note_with_duplicate_slug(self):
         initial_notes = set(Note.objects.all())
         self.field_form['slug'] = self.note.slug
         self.author_client.post(URL_NOTES_ADD, data={'text': self.field_form})
-        final_notes = set(Note.objects.all())
-        self.assertEqual(initial_notes, final_notes)
-        self.assertFalse(Note.objects.filter(text=self.field_form).exists())
+        self.assertEqual(initial_notes, set(Note.objects.all()))
 
     def test_author_can_edit_note(self):
         self.assertEqual(
