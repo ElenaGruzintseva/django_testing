@@ -32,6 +32,8 @@ URL_DELETE_REDIRECT = pytest.lazy_fixture('url_delete_redirect')
         (COMMENT_DETAIL_URL, ANONYMOUS_CLIENT, HTTPStatus.OK),
         (URL_EDIT_REDIRECT, ANONYMOUS_CLIENT, HTTPStatus.OK),
         (URL_DELETE_REDIRECT, ANONYMOUS_CLIENT, HTTPStatus.OK),
+        (URL_EDIT_COMMENT, ANONYMOUS_CLIENT, HTTPStatus.FOUND),
+        (URL_DELETE_COMMENT, ANONYMOUS_CLIENT, HTTPStatus.FOUND),
 
         (URL_HOME, AUTHOR_CLIENT, HTTPStatus.OK),
         (URL_SIGNUP, AUTHOR_CLIENT, HTTPStatus.OK),
@@ -54,6 +56,8 @@ URL_DELETE_REDIRECT = pytest.lazy_fixture('url_delete_redirect')
         (URL_DELETE_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
         (URL_EDIT_REDIRECT, READER_CLIENT, HTTPStatus.OK),
         (URL_DELETE_REDIRECT, READER_CLIENT, HTTPStatus.OK),
+        (URL_EDIT_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
+        (URL_DELETE_COMMENT, READER_CLIENT, HTTPStatus.NOT_FOUND),
     ),
 )
 def test_pages_availability_users(urls, parametrized_client, expected_status):
