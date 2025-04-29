@@ -18,9 +18,10 @@ python manage.py test
 pytest
 ```
 
-### Чтобы развернуть проект, установите зависимости, примените миграции, загрузите фикстуры, запустите сервер:
+### Чтобы развернуть проект, клонируйте репозиторий, установите зависимости, примените миграции, загрузите фикстуры, запустите сервер:
 
 ```
+git clone https://github.com/ElenaGruzintseva/django_testing
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py loaddata fixtures.json
