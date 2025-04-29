@@ -1,6 +1,6 @@
 # Django testing
 
-Здесь мною написаны unittest для *ya_note* и pytest для *ya_news*.
+Написаны unittest для *ya_note* и pytest для *ya_news*.
 
 *ya_note* - Записная книжка от Яндекс Практикум, где авторизованный пользователь оставляет заметки.
 
